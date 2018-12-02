@@ -10,8 +10,8 @@ http://adventofcode.com/2018
 
 ## Usage
 
-Each day is numbered and has a *.txt file for input data and a *.php file for processing.
+Each day's solution resides in a numbered directory containing a text file `input` as input data and `solve.php` for processing.
 
 Run using php-cli, e.g.:
 
-`php 01.php`
+`php 01/solve.php`
