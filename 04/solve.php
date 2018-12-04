@@ -58,24 +58,11 @@ $p2_chosen_minute = null;
 
 foreach ( $guards as $guard_id => $minutes )
 {
-    $sum_minutes        = 0; // how long did the current guard sleep?
-    $most_asleep_times  = 0; // how often was slept in a minute?
-    $most_asleep_minute = null; // which minute is record holder for most naps?
+    // part 2
+    // pretty straightforward
 
     foreach ( $minutes as $m => $count )
     {
-        // part 1
-
-        $sum_minutes += $count;
-
-        if ( $count > $most_asleep_times )
-        {
-            $most_asleep_minute = $m;
-            $most_asleep_times = $count;
-        }
-
-        // part 2
-
         if ( $count > $minute_slept_most )
         {
             $minute_slept_most = $count;
@@ -85,12 +72,21 @@ foreach ( $guards as $guard_id => $minutes )
     }
 
     // part 1
+    // use PHP's array functions to our advantage
+
+    $sum_minutes = array_sum ( $minutes );
 
     if ( $max_minutes < $sum_minutes )
     {
         $max_minutes      = $sum_minutes;
-        $p1_chosen_minute = $most_asleep_minute;
         $p1_chosen_guard  = $guard_id;
+
+        // sort array with the most slept minute first and return that array key
+        // that way we don't need to iterate over every entry ourselves
+
+        arsort ( $minutes );
+
+        $p1_chosen_minute = key ( $minutes );
     }
 }
 
