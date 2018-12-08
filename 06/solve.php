@@ -58,9 +58,6 @@ function distances ( &$all_points, &$plane, &$x, &$y )
             $distance = $plane [ $x ][ $y ][ 'distances' ][ $key ];
 
             $closest = $key;
-
-            if ( $plane [ $x ][ $y ][ 'distances' ][ $key ] == 0 )
-                $all_points [ $key ][ 2 ]++;
         }
 
         // equidistance to more than one point
