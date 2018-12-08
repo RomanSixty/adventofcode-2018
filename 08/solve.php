@@ -7,14 +7,13 @@ $input = explode ( ' ', file_get_contents ( __DIR__ . '/input' ) );
  *
  * @param array $current_node apply children to this node
  * @param array $entries get new data from here
- * @return int sum of metadata entries
+ *
+ * @return int sum of metadata entries of subtree
  */
 function buildTree ( &$current_node, &$entries )
 {
     if ( count ( $entries ) == 0 )
         return 0;
-
-    $sum = 0;
 
     $num_children = array_shift ( $entries );
     $num_meta     = array_shift ( $entries );
@@ -23,6 +22,8 @@ function buildTree ( &$current_node, &$entries )
         'children' => [],
         'metadata' => []
     ];
+
+    $sum = 0;
 
     for ( $children = 0; $children < $num_children; $children++ )
         $sum += buildTree ( $current_node [ 'children' ][], $entries );
@@ -36,8 +37,10 @@ function buildTree ( &$current_node, &$entries )
 }
 
 /**
- * part 2: calculate the value of the tree
+ * part 2: recursively calculate the value of the tree
+ *
  * @param array $current_node working node
+ *
  * @return int value of subtree
  */
 function getValue ( &$current_node )
@@ -48,10 +51,8 @@ function getValue ( &$current_node )
     $value = 0;
 
     foreach ( $current_node [ 'metadata' ] as $possible_node )
-    {
         if ( isset ( $current_node [ 'children' ][ $possible_node - 1 ] ) )
             $value += getValue ( $current_node [ 'children' ][ $possible_node - 1 ] );
-    }
 
     return $value;
 }
