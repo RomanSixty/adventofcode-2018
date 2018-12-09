@@ -49,44 +49,42 @@ $num_marbles_1 = $matches [ 2 ];
 $num_marbles_2 = $num_marbles_1 * 100;
 
 // first marble
-$first_marble = new CircleItem ( 0 );
+$current_marble = new CircleItem ( 0 );
 
-$current_marble =& $first_marble;
+$current_player = 0;
 
-$player = 0;
-
-for ( $marble = 1; $marble <= $num_marbles_2; $marble++ )
+for ( $number = 1; $number <= $num_marbles_2; $number++ )
 {
-    if ( $marble % 23 == 0 )
+    if ( $number % 23 == 0 )
     {
-        $player = $player % count ( $players );
-        $players [ $player ] += $marble;
+        $current_player = $current_player % count ( $players );
 
-        // get marble to remove 7 positions counterclockwise
-        $remove_marble = $current_marble -> prev -> prev -> prev -> prev -> prev -> prev -> prev;
+        $players [ $current_player ] += $number;
 
-        $players [ $player ] += $remove_marble -> value;
+        $marble_to_remove = $current_marble -> prev -> prev -> prev -> prev -> prev -> prev -> prev;
+
+        $players [ $current_player ] += $marble_to_remove -> value;
 
         // remove marble from chain
-        $remove_marble -> next -> prev = $remove_marble -> prev;
-        $remove_marble -> prev -> next = $remove_marble -> next;
+        $marble_to_remove -> next -> prev = $marble_to_remove -> prev;
+        $marble_to_remove -> prev -> next = $marble_to_remove -> next;
 
-        $current_marble = $remove_marble -> next;
+        $current_marble = $marble_to_remove -> next;
     }
     else
     {
         $insert_after = $current_marble -> next;
 
-        $current_marble = new CircleItem ( $marble, $insert_after, $insert_after -> next );
+        $current_marble = new CircleItem ( $number, $insert_after, $insert_after -> next );
 
         $insert_after -> next -> prev = $current_marble;
         $insert_after -> next = $current_marble;
     }
 
-    if ( $marble == $num_marbles_1 )
+    if ( $number == $num_marbles_1 )
         $part_1 = max ( $players );
 
-    $player++;
+    $current_player++;
 }
 
 echo 'First Part: ' . $part_1 . "\n";
