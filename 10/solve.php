@@ -78,9 +78,7 @@ while ( true )
         $seconds++;
     }
     else
-    {
         break;
-    }
 }
 
 
@@ -95,13 +93,11 @@ for ( $y = $y_min; $y <= $y_max; $y++ )
         $c = ' ';
 
         foreach ( $points as $point )
-        {
             if ( $point [ 'pos_x' ] == $x && $point [ 'pos_y' ] == $y )
             {
                 $c = '#';
                 break;
             }
-        }
 
         echo $c;
     }
