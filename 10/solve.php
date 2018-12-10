@@ -50,7 +50,7 @@ function getBounds ( $points )
         $y_max = max ( $point [ 'pos_y' ], $y_max );
     }
 
-    return [ 'x_min' => $x_min, 'y_min' => $y_min, 'x_max' => $x_max, 'y_max' => $y_max ];
+    return compact ( 'x_min', 'y_min', 'x_max', 'y_max' );
 }
 
 $area_latest = getArea ( $points );
@@ -92,7 +92,7 @@ for ( $y = $y_min; $y <= $y_max; $y++ )
 {
     for ( $x = $x_min; $x <= $x_max; $x++ )
     {
-        $c = '.';
+        $c = ' ';
 
         foreach ( $points as $point )
         {
