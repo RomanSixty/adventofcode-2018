@@ -8,7 +8,13 @@ $unit_grid = [];
 $work_grid = [];
 
 for ( $cell = 0; $cell < GRIDSIZE * GRIDSIZE; $cell++ )
-    $unit_grid [ $cell ] = getFuel ( $cell % GRIDSIZE, floor ( $cell / GRIDSIZE ), $input );
+{
+    // I count from 0, this algorithm does not...
+    $x = $cell % GRIDSIZE + 1;
+    $y = floor ( $cell / GRIDSIZE ) + 1;
+
+    $unit_grid [ $cell ] = floor ( ( pow($x,2)*$y + 20*$x*$y + 100*$y + $x*$input + 10*$input ) / 100 ) % 10 - 5;
+}
 
 $part_1 = 0;
 
@@ -24,7 +30,13 @@ $work_grid = $unit_grid;
 
 for ( $square_size = 2; $square_size <= GRIDSIZE; $square_size++ )
 {
-    $cells_to_add = getAdditionalCells ( $square_size );
+    $cells_to_add = [ $square_size - 1 ];
+
+    for ( $row = 1; $row < $square_size - 1; $row++ )
+        $cells_to_add[] = GRIDSIZE * $row + $square_size - 1;
+
+    for ( $col = 0; $col < $square_size; $col++ )
+        $cells_to_add[] = GRIDSIZE * ( $square_size - 1 ) + $col;
 
     for ( $cell = 0; $cell < GRIDSIZE * GRIDSIZE; $cell++ )
     {
@@ -47,44 +59,6 @@ for ( $square_size = 2; $square_size <= GRIDSIZE; $square_size++ )
         $max_size  = $square_size;
         $max_cell  = array_search ( $value, $work_grid );
     }
-}
-
-/**
- * calculate one cell's fuel value
- *
- * @param int $x
- * @param int $y
- * @param int $serial
- *
- * @return int
- */
-function getFuel ( $x, $y, $serial )
-{
-    // I count from 0, this algorithm does not...
-    $x++;
-    $y++;
-
-    return floor ( ( pow($x,2)*$y + 20*$x*$y + 100*$y + $x*$serial + 10*$serial ) / 100 ) % 10 - 5;
-}
-
-/**
- * which cell numbers (based on current cell) do we have to add with each iteration?
- * @param int $size
- * @return array list of cell numbers
- */
-function getAdditionalCells ( $size = 3 )
-{
-    $coords = [];
-
-    $coords[] = $size - 1;
-
-    for ( $row = 1; $row < $size - 1; $row++ )
-        $coords[] = GRIDSIZE * $row + $size - 1;
-
-    for ( $col = 0; $col < $size; $col++ )
-        $coords[] = GRIDSIZE * ( $size - 1 ) + $col;
-
-    return $coords;
 }
 
 echo 'First Part: ' . ( $part_1 % GRIDSIZE + 1 ) . ',' . ( floor ( $part_1 / GRIDSIZE ) + 1 ) . "\n";
