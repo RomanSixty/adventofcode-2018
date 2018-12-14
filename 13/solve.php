@@ -2,7 +2,7 @@
 
 $input = file_get_contents ( __DIR__ . '/input' );
 $width = strpos ( $input, "\n" );
-$plan = str_replace ( "\n", '', $input );
+$plan  = str_replace ( "\n", '', $input );
 
 $directions = [
     '^' => -$width,
@@ -33,15 +33,11 @@ for ( $i = 0; $i < strlen ( $plan ); $i++ )
         'lastturn'  => 0
     ];
 }
+
 $part_1 = null;
 
 while ( count ( $carts ) > 1 )
 {
-    // orders of carts change when they move around...
-    usort ( $carts, function ( $a, $b ) {
-        return ( $a [ 'position' ] < $b [ 'position' ] ) ? -1 : 1;
-    });
-
     $killed_carts = [];
 
     foreach ( $carts as $cart_id => &$cart )
@@ -109,10 +105,14 @@ while ( count ( $carts ) > 1 )
 
     foreach ( $killed_carts as $cart_id => $dummy )
         unset ( $carts [ $cart_id ] );
+
+    // orders of carts change when they move around...
+    usort ( $carts, function ( $a, $b ) {
+        return ( $a [ 'position' ] < $b [ 'position' ] ) ? -1 : 1;
+    });
 }
 
-$last_cart = array_shift ( $carts );
-$part_2 = $last_cart [ 'position' ];
+$part_2 = $carts [ 0 ][ 'position' ];
 
 echo 'First Part: ' . ( $part_1 % $width ) . ',' . floor ($part_1 / $width ) . "\n";
 echo 'Second Part: ' . ( $part_2 % $width ) . ',' . floor ($part_2 / $width ) . "\n";
