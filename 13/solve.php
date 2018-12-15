@@ -122,12 +122,12 @@ echo 'Second Part: ' . ( $part_2 % $width ) . ',' . floor ($part_2 / $width ) . 
  */
 function printPlan()
 {
-    global $plan, $carts, $size;
+    global $plan, $carts, $width;
 
     $step = $plan;
 
     foreach ( $carts as $cart )
         $step { $cart [ 'position' ] } = $cart [ 'direction' ];
 
-    echo implode ( "\n", str_split ( $step, $size ) ) . "\n\n";
+    echo implode ( "\n", str_split ( $step, $width ) ) . "\n\n";
 }
