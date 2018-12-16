@@ -29,7 +29,7 @@ for ( $i = 0; $i < count ( $opcodes ); $i++ )
 
 $dump = [];
 
-//                                     1     2     3     4         5    6    7    8                9    10    11    12
+//                             1     2     3     4        5     6    7    8                9    10    11    12
 preg_match_all ( '~Before: \[(\d), (\d), (\d), (\d)\]\s+(\d+) (\d) (\d) (\d)\s+After:  \[(\d), (\d), (\d), (\d)\]~ms', $input [ 0 ], $dump,  PREG_SET_ORDER );
 
 $part_1 = 0;
