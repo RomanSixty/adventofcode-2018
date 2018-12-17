@@ -25,9 +25,6 @@ foreach ( $matches as $match )
     $max [ $match [ 3 ]] = max ( $max [ $match [ 3 ]], intval ( $match [ 5 ] ) );
 }
 
-$min [ 'x' ]--;
-$max [ 'x' ]++;
-
 for ( $y = $min [ 'y' ]; $y <= $max [ 'y' ]; $y++ )
     for ( $x = $min [ 'x' ]; $x <= $max [ 'x' ]; $x++ )
         if ( empty ( $plan [ $y ][ $x ] ) )
@@ -38,6 +35,11 @@ $retained = 0;
 
 trickle ( 500, $min [ 'y' ] );
 
+/**
+ * water trickling vertically
+ * @param int $x source of trickling
+ * @param int $y source of trickling
+ */
 function trickle ( $x, $y )
 {
     global $plan, $max, $total;
@@ -57,6 +59,11 @@ function trickle ( $x, $y )
     flow ( $x, $y );
 }
 
+/**
+ * water flowing left and right on a surface
+ * @param int $x source of flow
+ * @param int $y source of flow
+ */
 function flow ( $x, $y )
 {
     global $plan, $min, $max, $total;
@@ -91,6 +98,16 @@ function flow ( $x, $y )
         $plan [ $y ][ $l ] = 'o';
 }
 
+/**
+ * everything has to be checked for both flow directions
+ *
+ * @param bool  $overflow are we flowing over an edge?
+ * @param array $level    collect all water on this level to mark it when overflown
+ * @param int $x          coordinate of current flow state
+ * @param int $y          coordinate of current flow state
+ *
+ * @return bool           false if we need to break the flow (wall or edge)
+ */
 function spread ( &$overflow, &$level, $x, $y )
 {
     global $plan, $total;
@@ -119,6 +136,9 @@ function spread ( &$overflow, &$level, $x, $y )
     return true;
 }
 
+// this is by far the most unsatisfying solution yet...
+// mark all trickle and overflows as retained when certain
+// conditions are met
 for ( $y = $min [ 'y' ]; $y <= $max [ 'y' ]; $y++ )
     for ( $x = $min [ 'x' ]; $x <= $max [ 'x' ]; $x++ )
     {
@@ -146,6 +166,10 @@ echo 'First Part: ' . $total . "\n";
 echo 'Second Part: ' . $retained . "\n";
 
 // for debugging purposes
+// # : wall
+// | : trickle direction
+// ~ : flow direction
+// o : overflowing water
 function printPlan()
 {
     global $plan, $min, $max;
