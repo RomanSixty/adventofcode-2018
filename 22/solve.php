@@ -1,20 +1,13 @@
 <?php
 
-ini_set('xdebug.max_nesting_level', 200000);
-
-$start = microtime ( true );
-
 $input = file ( __DIR__ . '/input' );
 
-list ( $dummy, $depth ) = explode ( ' ', $input [ 0 ] );
+list ( $dummy, $depth  ) = explode ( ' ', $input [ 0 ] );
 list ( $dummy, $target ) = explode ( ' ', $input [ 1 ] );
 
 $target = explode ( ',', $target );
 
-$padding = 3;
-
-//$target = [ 10, 10 ];
-//$depth = 510;
+$padding = 50; // don't let this be too small
 
 $cave = [];
 $risk_level = 0;
@@ -44,61 +37,55 @@ for ( $y = 0; $y <= $target [ 1 ] + $padding; $y++ )
             $risk_level += $type;
     }
 
-findPath ( 0, 0, 0 );
-printCave();
+// for convenience reasons we treat tools as integers in a way, that
+// it's value equals the value of the geological type where it cannot
+// be used... so:
+// 0 : rocky  : neither
+// 1 : wet    : torch
+// 2 : narrow : climbing gear
 
-echo 'First Part: ' . $risk_level . "\n";
-echo 'Second Part: ' . $cave [ $target [ 1 ]][ $target [ 0 ]][ 'distance' ] . "\n";
-
-function findPath ( $x, $y, $distance, $tool = 1 )
+function findShortestTime()
 {
-    static $best_so_far = 1050;
+    global $cave;
 
-    global $cave, $target;
+    $queue = new SPLPriorityQueue();
 
-    //echo "$distance | $best_so_far\n";
-    //printCave ( [ $x, $y ] );
+    $queue -> setExtractFlags ( SplPriorityQueue::EXTR_BOTH );
 
-    if ( !isset ( $cave [ $y ][ $x ][ 'distance' ] ) )
-        $cave [ $y ][ $x ][ 'distance' ] = $distance;
-    else
+    $queue -> insert ( [ 0, 0, 1 ], 0 );
+
+    while ( !$queue -> isEmpty() )
     {
-        if ( $cave [ $y ][ $x ][ 'distance' ] < $distance )
-            return;
+        $q = $queue -> extract();
 
-        $cave [ $y ][ $x ][ 'distance' ] = $distance;
-    }
+        list ( $x, $y, $tool ) = $q [ 'data' ];
 
-    if ( $x == $target [ 0 ] && $y == $target [ 1 ] )
-    {
-        $new_distance = $tool == 1 ? $distance : $distance + 7;
-        $best_so_far = min ( $best_so_far, $new_distance );
-        $cave [ $y ][ $x ][ 'distance' ] = $best_so_far;
-    }
-
-    if ( $distance >= $best_so_far )
-        return;
-
-    foreach ( getAdjacent ( $x, $y, $tool ) as $adjacent )
-    {
-        $next = $cave [ $adjacent [ 1 ]][ $adjacent [ 0 ]];
-
-        if ( $next [ 'type' ] != $tool )
-            findPath ( $adjacent [ 0 ], $adjacent [ 1 ], $distance + 1, $tool );
-        elseif ( isset ( $next [ 'distance' ] ) && $next [ 'distance' ] < $distance + 8 )
+        if ( isset ( $cave [ $y ][ $x ][ 'distance' ][ $tool ] ) )
             continue;
-        else
-        {
-            $next_tool = ( $tool + 1 ) % 3 == $cave [ $y ][ $x ][ 'type' ] ? ( $tool + 2 ) % 3 : ( $tool + 1 ) % 3;
 
-            findPath ( $adjacent [ 0 ], $adjacent [ 1 ], $distance + 8, $next_tool );
-        }
+        // higher is better in SPLPriorityQueue...
+        // but for our problem it's worse, so we use it as a negative value
+
+        $cave [ $y ][ $x ][ 'distance' ][ $tool ] = abs ( $q [ 'priority' ] );
+
+        // tool is allowed
+        foreach ( getAdjacent ( $x, $y ) as $adjacent )
+            if ( $cave [ $adjacent [ 1 ]][ $adjacent [ 0 ]][ 'type' ] != $tool )
+                $queue -> insert ( [ $adjacent [ 0 ], $adjacent [ 1 ], $tool ], -( $cave [ $y ][ $x ][ 'distance' ][ $tool ] + 1 ) );
+
+        // tool is not allowed, so change it and try again
+        $other_tool = ( $tool + 1 ) % 3 == $cave [ $y ][ $x ][ 'type' ] ? ( $tool + 2 ) % 3 : ( $tool + 1 ) % 3;
+
+        if ( !isset ( $cave [ $y ][ $x ][ 'distance' ][ $other_tool ] ) )
+            $queue -> insert ( [ $x, $y, $other_tool], -( $cave [ $y ][ $x ][ 'distance' ][ $tool ] + 7 ) );
     }
 }
 
-function getAdjacent ( $x, $y, $tool )
+function getAdjacent ( $x, $y )
 {
     global $cave;
+
+    $adjacent = [];
 
     if ( $x < count ( $cave [ 0 ] ) - 1 )
         $adjacent[] = [ $x + 1, $y ];
@@ -112,54 +99,10 @@ function getAdjacent ( $x, $y, $tool )
     if ( $y > 0 )
         $adjacent[] = [ $x, $y - 1 ];
 
-    usort ( $adjacent, function ( $a, $b ) use ( $tool ) {
-        global $cave, $target;
-
-        if ( $b [ 0 ] == $target [ 0 ] && $b [ 1 ] == $target [ 1 ] )
-            return 1;
-
-        //if ( isset ( $cave [ $a [ 1 ]][ $a [ 0 ]][ 'distance' ] ) && isset ( $cave [ $b [ 1 ]][ $b [ 0 ]][ 'distance' ] ) && $cave [ $a [ 1 ]][ $a [ 0 ]][ 'distance' ] < $cave [ $b [ 1 ]][ $b [ 0 ]][ 'distance' ] )
-        //    return 1;
-
-        return ( $tool == $cave [ $a [ 1 ]][ $a [ 0 ]][ 'type' ] ) ? 1 : -1;
-    });
-
     return $adjacent;
 }
 
-function printCave ( $hilight = [ 0, 0 ] )
-{
-    global $cave, $target;
+findShortestTime();
 
-    foreach ( $cave as $y => $row )
-    {
-        foreach ( $row as $x => $cell )
-        {
-            switch ( $cell [ 'type' ] )
-            {
-                case 0: $char = '.'; break;
-                case 1: $char = '='; break;
-                case 2: $char = '|'; break;
-            }
-
-            if ( $x == 0 && $y == 0 )
-                $char = 'M';
-
-            if ( $x == $target [ 0 ] && $y == $target [ 1 ] )
-                $char = 'T';
-
-            if ( $x == $hilight [ 0 ] && $y == $hilight [ 1 ] )
-                echo "\033[0;31m" . $char . "\033[0m";
-            elseif ( isset ( $cell [ 'distance' ] ) )
-                echo "\033[0;100m" . $char . "\033[0m";
-            else
-                echo $char;
-        }
-
-        echo "\n";
-    }
-}
-
-$end = microtime ( true );
-
-echo $end - $start . 'ms';
+echo 'First Part: ' . $risk_level . "\n";
+echo 'Second Part: ' . $cave [ $target [ 1 ]][ $target [ 0 ]][ 'distance' ][ 1 ] . "\n";
