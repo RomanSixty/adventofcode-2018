@@ -37,9 +37,8 @@ for ( $y = 0; $y <= $target [ 1 ] + $padding; $y++ )
             $risk_level += $type;
     }
 
-// for convenience reasons we treat tools as integers in a way, that
-// it's value equals the value of the geological type where it cannot
-// be used... so:
+// for convenience reasons we treat tools as integers in a way, that its value
+// equals the value of the geological type where it cannot be used... so:
 // 0 : rocky  : neither
 // 1 : wet    : torch
 // 2 : narrow : climbing gear
