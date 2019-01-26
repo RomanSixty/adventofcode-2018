@@ -4,62 +4,67 @@ $input = file_get_contents ( __DIR__ . '/input' );
 
 define ( 'GRIDSIZE', 300 );
 
-$unit_grid = [];
-$work_grid = [];
+// grid is offset by 1 in each direction to save some > 0 comparisons
+$grid = [];
 
-for ( $cell = 0; $cell < GRIDSIZE * GRIDSIZE; $cell++ )
+$grid [ 0 ] = array_fill ( 0, GRIDSIZE + 1, 0 );
+
+for ( $y = 1; $y <= GRIDSIZE; $y++ )
 {
-    // I count from 0, this algorithm does not...
-    $x = $cell % GRIDSIZE + 1;
-    $y = floor ( $cell / GRIDSIZE ) + 1;
+    $grid [ $y ][ 0 ] = 0;
 
-    $unit_grid [ $cell ] = floor ( ( pow($x,2)*$y + 20*$x*$y + 100*$y + $x*$input + 10*$input ) / 100 ) % 10 - 5;
+    for ( $x = 1; $x <= GRIDSIZE; $x++ )
+    {
+        $grid [ $y ][ $x ] = floor ( ( pow($x,2)*$y + 20*$x*$y + 100*$y + $x*$input + 10*$input ) / 100 ) % 10 - 5;
+
+        // @see https://en.wikipedia.org/wiki/Summed-area_table
+
+        $grid [ $y ][ $x ] += $grid [ $y - 1 ][ $x ];
+        $grid [ $y ][ $x ] += $grid [ $y ][ $x - 1 ];
+        $grid [ $y ][ $x ] -= $grid [ $y - 1 ][ $x - 1 ];
+    }
 }
 
-$part_1 = 0;
+$part_1 = '0,0';
 
-$max_value = max ( $unit_grid );
+$max_value = 0;
 $max_size  = 1;
 $max_cell  = 0;
 
-$work_grid = $unit_grid;
-
-// this may take a while... about 3½ minutes on my slow machine
-// but it's still orders of magnitude faster than my company's PHP competition :)
-// I'm pretty sure it can still be optimized though
-
 for ( $square_size = 2; $square_size <= GRIDSIZE; $square_size++ )
 {
-    $cells_to_add = [ $square_size - 1 ];
+    $largest_v = $largest_x = $largest_y = 0;
 
-    for ( $row = 1; $row < $square_size - 1; $row++ )
-        $cells_to_add[] = GRIDSIZE * $row + $square_size - 1;
+    for ( $y = 1; $y <= GRIDSIZE; $y++ )
+        for ( $x = 1; $x <= GRIDSIZE; $x++ )
+        {
+            // stop if our square wouldn't fit the grid anymore
+            if ( $y >= GRIDSIZE - $square_size || $x >= GRIDSIZE - $square_size )
+                continue;
 
-    for ( $col = 0; $col < $square_size; $col++ )
-        $cells_to_add[] = GRIDSIZE * ( $square_size - 1 ) + $col;
+            $value =  $grid [ $y + $square_size - 1 ][ $x + $square_size - 1 ];
+            $value -= $grid [ $y - 1 ][ $x + $square_size - 1 ];
+            $value -= $grid [ $y + $square_size - 1 ][ $x - 1 ];
+            $value += $grid [ $y - 1 ][ $x - 1 ];
 
-    for ( $cell = 0; $cell < GRIDSIZE * GRIDSIZE; $cell++ )
-    {
-        // stop if our square wouldn't fit the grid anymore
-        if ( $cell % GRIDSIZE > GRIDSIZE - $square_size || floor ( $cell / GRIDSIZE ) > GRIDSIZE - $square_size )
-            continue;
-
-        foreach ( $cells_to_add as $cta )
-            $work_grid [ $cell ] += $unit_grid [ $cell + $cta ];
-    }
-
-    $value = max ( $work_grid );
+            if ( $value > $largest_v )
+            {
+                $largest_v = $value;
+                $largest_x = $x;
+                $largest_y = $y;
+            }
+        }
 
     if ( $square_size == 3 )
-        $part_1 = array_search ( $value, $work_grid );
+        $part_1 = $largest_x . ',' . $largest_y;
 
-    if ( $value > $max_value )
+    if ( $largest_v > $max_value )
     {
-        $max_value = $value;
+        $max_value = $largest_v;
         $max_size  = $square_size;
-        $max_cell  = array_search ( $value, $work_grid );
+        $max_cell  = $largest_x . ',' . $largest_y;
     }
 }
 
-echo 'First Part: ' . ( $part_1 % GRIDSIZE + 1 ) . ',' . ( floor ( $part_1 / GRIDSIZE ) + 1 ) . "\n";
-echo 'Second Part: ' . ( $max_cell % GRIDSIZE + 1 ) . ',' . ( floor ( $max_cell / GRIDSIZE ) + 1 ) . ',' . $max_size . "\n";
+echo 'First Part: ' . $part_1 . "\n";
+echo 'Second Part: ' . $max_cell . ',' . $max_size . "\n";
